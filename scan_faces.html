@@ -1,0 +1,74 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Scan Faces</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    h2 {
+      color: #333;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      margin: 8px 0;
+      padding: 10px;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+    li:contains("✅") { background: #d4edda; color: #155724; }
+    li:contains("❌") { background: #f8d7da; color: #721c24; }
+    li:contains("⚠️") { background: #fff3cd; color: #856404; }
+    form {
+      margin-top: 15px;
+    }
+    input[type="file"] {
+      margin: 10px 0;
+    }
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    a {
+      text-decoration: none;
+      color: #007bff;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  {% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <ul>
+      {% for message in messages %}
+        <li>{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+  {% endwith %}
+
+  <h2>📸 Upload Group Photo for Face Attendance</h2>
+  <form method="POST" enctype="multipart/form-data">
+    <input type="file" name="group_photo" accept="image/*" required>
+    <br>
+    <button type="submit">Upload & Scan</button>
+  </form>
+
+  <p><a href="/dashboard">⬅ Back to Dashboard</a></p>
+</body>
+</html>

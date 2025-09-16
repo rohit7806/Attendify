@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Scan QR - Attendify</title>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h2 { color: #333; }
+    #reader { width: 400px; margin: 20px auto; }
+    a { display:inline-block; margin-top:20px; text-decoration:none; color:white; background:#007BFF; padding:10px 15px; border-radius:5px; }
+  </style>
+</head>
+<body>
+  <h2>📷 Scan QR to Mark Attendance</h2>
+  <div id="reader"></div>
+
+  <!-- Sound file -->
+  <audio id="success-sound">
+    <source src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg" type="audio/ogg">
+  </audio>
+
+  <script>
+    function onScanSuccess(qrMessage) {
+        // Play sound
+        document.getElementById("success-sound").play();
+
+        // Call backend /mark/<roll>
+        fetch("/mark/" + qrMessage)
+          .then(() => {
+            alert("Attendance marked: " + qrMessage);
+            window.location.href = "/dashboard";
+          });
+    }
+
+    function onScanError(errorMessage) {
+        console.warn(`QR Scan Error: ${errorMessage}`);
+    }
+
+    let html5QrcodeScanner = new Html5QrcodeScanner(
+        "reader", { fps: 10, qrbox: 250 });
+    html5QrcodeScanner.render(onScanSuccess, onScanError);
+  </script>
+
+  <a href="/dashboard">⬅ Back to Dashboard</a>
+</body>
+</html>

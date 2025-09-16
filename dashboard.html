@@ -1,0 +1,145 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Attendify - Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    /* small additions on top of style.css */
+    .header-row {
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:14px 24px;
+    }
+    .logo { height:48px; }
+    .summary-card {
+      display:flex;
+      gap:18px;
+      align-items:center;
+      margin: 16px 24px;
+    }
+    .card {
+      background: white;
+      padding:12px 18px;
+      border-radius:10px;
+      box-shadow: 0 6px 16px rgba(11,20,35,0.04);
+      font-weight:600;
+    }
+    .badge-present { background:#d4f7df; color:#11632a; padding:6px 10px; border-radius:8px; font-weight:700; }
+    .badge-absent { background:#ffe6e6; color:#7a1d1d; padding:6px 10px; border-radius:8px; font-weight:700; }
+    .btn-link { text-decoration:none; display:inline-block; padding:6px 10px; border-radius:6px; }
+    table { width:calc(100% - 48px); margin: 10px 24px 24px 24px; border-collapse:collapse; background:white; border-radius:8px; overflow:hidden; box-shadow:0 6px 18px rgba(11,20,35,0.04); }
+    th { background:#f6f8fb; font-weight:700; padding:12px; text-align:center; }
+    td { padding:10px 12px; text-align:center; border-top:1px solid #eef2f6; }
+    tr.present-row td { background: #f6fffa; }
+    tr.absent-row td { background: #fff6f6; }
+    .small-note { color:#6b7280; font-size:0.95rem; margin: 8px 24px; }
+  </style>
+</head>
+<body>
+  <header class="header-row">
+    <img src="{{ url_for('static', filename='logo.png') }}" alt="Attendify" class="logo">
+    <div style="font-size:1.1rem; font-weight:700;">Attendify — Attendance Dashboard</div>
+  </header>
+
+  <main>
+    <!-- flashed messages -->
+    <div style="margin: 12px 24px;">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <ul style="list-style:none; padding:0; margin:0;">
+            {% for category, msg in messages %}
+              <li style="margin-bottom:8px; padding:10px; border-radius:8px;
+                         background: {{ 'var(--success-bg)' if category=='success' else 'var(--error-bg)' if category=='error' else 'var(--warn-bg)' }};
+                         color: {{ 'var(--success-color)' if category=='success' else 'var(--error-color)' if category=='error' else 'var(--warn-color)' }};
+                         font-weight:700;">
+                {{ msg }}
+              </li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      {% endwith %}
+    </div>
+
+    <!-- summary -->
+    <section class="summary-card">
+      <div class="card">
+        <div>Today's Attendance</div>
+        <div style="font-size:1.4rem; margin-top:6px;">{{ today_count }} / {{ total_students }} Present</div>
+      </div>
+      <div class="card">
+        <div>Completion</div>
+        {% set percent = (today_count * 100 / (total_students if total_students>0 else 1))|round(1) %}
+        <div style="font-size:1.4rem; margin-top:6px;">{{ percent }}%</div>
+      </div>
+
+      <div style="margin-left:auto; display:flex; gap:10px; align-items:center;">
+        <a href="/download_report" class="btn btn-download">📥 Download CSV</a>
+        <a href="/scan_qr" class="btn btn-scan">📷 Scan QR</a>
+        <a href="/scan_faces" class="btn btn-scan">👥 Scan Faces</a>
+        <a href="/voice_attendance" class="btn btn-scan">🎤 Voice</a>
+      </div>
+    </section>
+
+    <!-- students table -->
+    <section>
+      <h3 style="margin: 8px 24px 0 24px;">Students</h3>
+      <table>
+        <tr>
+          <th>Roll</th>
+          <th>Name</th>
+          <th>Action</th>
+        </tr>
+
+        {% for s in students %}
+          {# find the latest status for this student (loops set latest) #}
+          {% set status = None %}
+          {% for r in attendance %}
+            {% if r['roll'] == s['roll'] %}
+              {% set status = r['status'] %}
+            {% endif %}
+          {% endfor %}
+
+          <tr class="{{ 'present-row' if status=='Present' else 'absent-row' if status=='Absent' else '' }}">
+            <td>{{ s['roll'] }}</td>
+            <td style="text-align:left; padding-left:18px;">{{ s['name'] }}</td>
+            <td>
+              {% if status == 'Present' %}
+                <span class="badge-present">✅ Present</span>
+              {% elif status == 'Absent' %}
+                <span class="badge-absent">✖ Absent</span>
+              {% else %}
+                <a href="/mark/{{ s['roll'] }}" class="btn btn-present btn-link">✔ Mark Present</a>
+                <a href="/mark_absent/{{ s['roll'] }}" class="btn btn-absent btn-link">✖ Mark Absent</a>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </table>
+    </section>
+
+    <!-- attendance log -->
+    <section style="margin-top:16px;">
+      <h3 style="margin: 8px 24px 0 24px;">Attendance Log</h3>
+      {% if attendance %}
+        <table>
+          <tr>
+            <th>Timestamp</th><th>Roll</th><th>Status</th>
+          </tr>
+          {% for r in attendance %}
+            <tr class="{{ 'present-row' if r['status']=='Present' else 'absent-row' }}">
+              <td>{{ r['timestamp'] }}</td>
+              <td>{{ r['roll'] }}</td>
+              <td>{{ r['status'] }}</td>
+            </tr>
+          {% endfor %}
+        </table>
+      {% else %}
+        <p class="small-note">No attendance recorded yet today.</p>
+      {% endif %}
+    </section>
+
+  </main>
+</body>
+</html>

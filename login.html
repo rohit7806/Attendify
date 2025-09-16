@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Attendify - Login</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="header">
+    <img src="{{ url_for('static', filename='logo.png') }}" alt="Attendify" class="logo">
+    <div style="font-weight:700; font-size:1.05rem; color:#0f172a;">Attendify</div>
+  </header>
+
+  <main class="main">
+    <div class="login-card">
+      <h2>Teacher Login</h2>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <ul class="flash-list">
+            {% for category, msg in messages %}
+              {# categories: 'success','error','warn' - fallback to plain if unknown #}
+              <li class="{{ 'success' if category=='success' else 'error' if category=='error' else 'warn' }}">{{ msg }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      {% endwith %}
+
+      <form method="post" autocomplete="off">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input id="username" name="username" type="text" required>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" required>
+        </div>
+
+        <div class="actions">
+          <button type="submit" class="btn btn-primary">Login</button>
+          <a href="/dashboard" class="btn btn-secondary">Demo</a>
+        </div>
+      </form>
+
+      <p class="small">Demo credentials: <strong>teacher / password</strong></p>
+    </div>
+  </main>
+</body>
+</html>
